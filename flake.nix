@@ -18,10 +18,41 @@
         "${cargoToml.package.name}" = final.callPackage ./. { inherit naersk; };
       };
 
-      packages = forAllSystems (system:
+    #  x86_64-linux = {
+    #    type = "realisation";
+    #    system = "x86_64-linux";
+    #    outputs = [ "out" "debug" ];
+    #    defaultOutput = "out";
+    #    buildInputs = [ nixpkgs.clang ];
+    #    shellHook = ''
+    #      export CC=clang
+    #    '';
+    #    packages = import ./default.nix {
+    #      system = "x86_64-linux";
+    #      pkgs = nixpkgs;
+    #    };
+    #  };
+    #  aarch64-linux = {
+    #    type = "realisation";
+    #    system = "aarch64-linux";
+    #    outputs = [ "out" "debug" ];
+    #    defaultOutput = "out";
+    #    crossSystem = "x86_64-linux";
+    #    buildPackages = [ nixpkgs.cross.aarch64-linux.gcc ];
+    #    nativeBuildInputs = [ nixpkgs.autoconf nixpkgs.automake nixpkgs.libtool ];
+    #    packages = import ./default.nix {
+    #      system = "aarch64-linux";
+    #      pkgs = nixpkgs;
+    #    };
+    #  };
+    #};
+
+
+
+      packages =
         let
           pkgs = import nixpkgs {
-            inherit system;
+            system = "aarch64-linux";
             overlays = [
               self.overlay
             ];
@@ -29,7 +60,7 @@
         in
         {
           "${cargoToml.package.name}" = pkgs."${cargoToml.package.name}";
-        });
+        };
 
 
       defaultPackage = forAllSystems (system: (import nixpkgs {
