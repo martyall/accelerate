@@ -1,56 +1,21 @@
-{ lib
-, naersk
-, stdenv
-, clangStdenv
-, hostPlatform
-, targetPlatform
-, pkg-config
-, libiconv
-, rustfmt
-, cargo
-, rustc
-  # , llvmPackages # Optional
-  # , protobuf     # Optional
-}:
+{ lib, rustPlatform, lld }:
 
-let
-  cargoToml = (builtins.fromTOML (builtins.readFile ./Cargo.toml));
-in
+let cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
+in rustPlatform.buildRustPackage {
+  inherit (cargoToml.package) version;
+  pname = cargoToml.package.name;
 
-naersk.lib."${targetPlatform.system}".buildPackage rec {
   src = ./.;
 
-  buildInputs = [
-    rustfmt
-    pkg-config
-    cargo
-    rustc
-    libiconv
-  ];
-  checkInputs = [ cargo rustc ];
+  cargoLock.lockFile = ./Cargo.lock;
 
-  doCheck = true;
-  CARGO_BUILD_INCREMENTAL = "false";
-  RUST_BACKTRACE = "full";
-  copyLibs = true;
+  nativeBuildInputs = [ lld ];
 
-  # Optional things you might need:
-  #
-  # If you depend on `libclang`:
-  # LIBCLANG_PATH = "${llvmPackages.libclang}/lib";
-  #
-  # If you depend on protobuf:
-  # PROTOC = "${protobuf}/bin/protoc";
-  # PROTOC_INCLUDE = "${protobuf}/include";
-
-  name = cargoToml.package.name;
-  version = cargoToml.package.version;
+  # no tests for no_std
+  doCheck = false;
 
   meta = with lib; {
-    description = cargoToml.package.description;
-    homepage = cargoToml.package.homepage;
-    license = with licenses; [ mit ];
-    maintainers = with maintainers; [ ];
+    inherit (cargoToml.package) description;
+    licenses = with licenses; [ mit ];
   };
 }
-
