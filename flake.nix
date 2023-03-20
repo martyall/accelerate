@@ -12,6 +12,7 @@
       cargoToml = (builtins.fromTOML (builtins.readFile ./Cargo.toml));
       supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
       forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f system);
+      system = "aarch64-linux";
     in
     {
       overlay = final: prev: {
@@ -47,12 +48,11 @@
     #  };
     #};
 
-
-
-      packages =
+      packages = forAllSystems (system:
         let
           pkgs = import nixpkgs {
             system = "aarch64-linux";
+            crossSystem = "x86_64-linux";
             overlays = [
               self.overlay
             ];
@@ -60,13 +60,46 @@
         in
         {
           "${cargoToml.package.name}" = pkgs."${cargoToml.package.name}";
-        };
+        });
 
 
       defaultPackage = forAllSystems (system: (import nixpkgs {
         inherit system;
         overlays = [ self.overlay ];
       })."${cargoToml.package.name}");
+
+
+
+      arch =
+        let
+          pkgs = import nixpkgs {
+            system = "aarch64-linux";
+            crossSystem = "x86_64-linux";
+            overlays = [
+              self.overlay
+            ];
+          };
+        in
+          { "${cargoToml.package.name}" = pkgs."${cargoToml.package.name}";
+          };
+      aarch64-linux =
+        let
+          pkgs = import nixpkgs {
+            system = "aarch64-linux";
+            crossSystem = "x86_64-linux";
+            overlays = [
+              self.overlay
+            ];
+          };
+        in
+          { "${cargoToml.package.name}" = pkgs."${cargoToml.package.name}";
+          };
+
+
+      #defaultPackage = forAllSystems (system: (import nixpkgs {
+      #  inherit system;
+      #  overlays = [ self.overlay ];
+      #})."${cargoToml.package.name}");
 
       checks = forAllSystems (system:
         let
