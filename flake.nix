@@ -15,7 +15,7 @@
               config.allowUnsupportedSystem = true;
             };
           in
-          embeddedPkgs.callPackage ./default.nix { };
+            embeddedPkgs.callPackage ./default.nix { };
         pkgs = import nixpkgs { inherit system; };
         hello-native = pkgs.callPackage ./default.nix { };
       in
