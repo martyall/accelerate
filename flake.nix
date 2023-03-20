@@ -48,19 +48,21 @@
     #  };
     #};
 
-      packages = forAllSystems (system:
-        let
-          pkgs = import nixpkgs {
-            system = "aarch64-linux";
-            crossSystem = "x86_64-linux";
-            overlays = [
-              self.overlay
-            ];
-          };
+      packages = {
+        arch = 
+          let
+            pkgs = import nixpkgs {
+              system = "aarch64-linux";
+              crossSystem = "x86_64-linux";
+              overlays = [
+                self.overlay
+              ];
+            };
         in
-        {
+          {
           "${cargoToml.package.name}" = pkgs."${cargoToml.package.name}";
-        });
+          };
+     };
 
 
       defaultPackage = forAllSystems (system: (import nixpkgs {
